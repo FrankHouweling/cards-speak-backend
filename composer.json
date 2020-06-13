@@ -1,0 +1,30 @@
+{
+    "name": "senet/cards-speak-backend",
+    "description": "An open source planning poker application.",
+    "type": "project",
+    "require": {
+        "react/react": "^1.0",
+        "react/socket": "^1.4",
+        "jawira/case-converter": "^3.4",
+        "ramsey/uuid": "^4.0",
+        "webmozart/assert": "^1.8",
+        "monolog/monolog": "^2.1",
+        "ext-json": "*",
+        "cboden/ratchet": "^0.4.2"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "FrankHouweling\\CardsSpeak\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Frank Houweling",
+            "email": "fhouweling@senet.nl"
+        }
+    ]
+}
