@@ -37,15 +37,27 @@ final class Room implements \JsonSerializable
     private $connections;
 
     /**
+     * @var string
+     */
+    private $slug;
+
+    /**
+     * @var array
+     */
+    private $userNames;
+
+    /**
      * Room constructor.
      * @param string $name
      * @param string $clientSecret
      */
-    public function __construct(string $name, string $clientSecret)
+    public function __construct(string $name, string $clientSecret, string $slug)
     {
         $this->name = $name;
         $this->ownerClientSecret = $clientSecret;
         $this->connections = new SplObjectStorage();
+        $this->userNames = [];
+        $this->slug = $slug;
     }
 
     /**
@@ -77,6 +89,7 @@ final class Room implements \JsonSerializable
      */
     public function detachConnection(ConnectionInterface $connection)
     {
+        unset($this->userNames[spl_object_hash($connection)]);
         $this->connections->detach($connection);
     }
 
@@ -98,6 +111,23 @@ final class Room implements \JsonSerializable
     }
 
     /**
+     * @return array
+     */
+    public function getUserNames(): array
+    {
+        return $this->userNames;
+    }
+
+    /**
+     * @param string $clientSecret
+     * @param string $name
+     */
+    public function setUserName(string $clientSecret, string $name)
+    {
+        $this->userNames[$clientSecret] = $name;
+    }
+
+    /**
      * Specify data which should be serialized to JSON
      *
      * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
@@ -109,7 +139,9 @@ final class Room implements \JsonSerializable
     {
         return [
             'name' => $this->getName(),
-            'connectionCount' => $this->getConnections()->count()
+            'connectionCount' => $this->getConnections()->count(),
+            'slug' => $this->slug,
+            'userNames' => array_values($this->userNames),
         ];
     }
 }

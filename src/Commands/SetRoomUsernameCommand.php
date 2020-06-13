@@ -12,47 +12,37 @@ declare(strict_types=1);
 
 namespace FrankHouweling\CardsSpeak\Commands;
 
-
 use FrankHouweling\CardsSpeak\State\ApplicationState;
-use FrankHouweling\CardsSpeak\State\Room;
 use Ratchet\ConnectionInterface;
-use Webmozart\Assert\Assert;
 
 /**
- * Class CreateRoomCommand
+ * Class SetRoomUsernameCommand
  * @package FrankHouweling\CardsSpeak\Commands
  */
-class CreateRoomCommand implements CommandInterface
+final class SetRoomUsernameCommand implements CommandInterface
 {
-
     /**
-     * Create a new Room
+     * Set the room username
      *
      * @param array $commandData
      * @param ApplicationState $state
      * @param ConnectionInterface $connection
-     *
      * @return array
      */
     public function __invoke(array $commandData, ApplicationState $state, ConnectionInterface $connection): array
     {
-        Assert::notEmpty($commandData['name']);
-        Assert::notEmpty($commandData['client_secret']);
-        Assert::notEmpty($commandData['slug']);
-
-        $room = $state->getRoomsPool()->findBySlug($commandData['slug']);
-        if ($room !== null){
-            return ['error' => 'Slug is already in use'];
+        $room = $state->getRoomsPool()->findBySlug($commandData['slug'] ?? '');
+        if ($room === null){
+            return ['error' => 'Unknown room'];
         }
+        $room->setUserName(spl_object_hash($connection), $commandData['user_name']);
 
-        $room = new Room(
-            $commandData['name'],
-            $commandData['client_secret'],
-            $commandData['slug']
-        );
-
-        $state->getRoomsPool()->add($room, $commandData['slug']);
-
+        foreach ($room->getConnections() as $roomConnection) {
+            $roomConnection->send(json_encode([
+                'event' => 'room_info_updated',
+                'data' => $room,
+            ]));
+        }
         return [];
     }
 }
